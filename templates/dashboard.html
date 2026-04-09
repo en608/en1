@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频与文本总结工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .nav-brand span {
+            font-size: 28px;
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .btn-logout {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            color: #666;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .main-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea::placeholder {
+            color: #aaa;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #667eea;
+            border-top-color: transparent;
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #c62828;
+            background-color: #ffebee;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid #ef9a9a;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            background-color: #fafafa;
+            border-radius: 12px;
+            position: relative;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .source-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .copy-btn {
+            padding: 8px 20px;
+            font-size: 14px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .summary-content {
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+            font-size: 15px;
+        }
+        
+        .raw-content {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #666;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .raw-content-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .flash.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        
+        .flash.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="nav-brand">
+                <span>🎬</span>
+                视频与文本总结工具
+            </div>
+            <div class="nav-user">
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.username[0]|upper }}</div>
+                    <span>{{ current_user.username }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout">退出登录</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="main-card">
+            <h1>🎯 智能总结</h1>
+            <p class="subtitle">粘贴视频链接或文本，AI自动提取要点</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="/summarize" onsubmit="showLoading()">
+                <textarea name="content" placeholder="在这里粘贴视频链接（YouTube、B站、抖音等）或输入文本...">{{ content if content else '' }}</textarea>
+                <button type="submit" class="btn-submit">✨ 生成总结</button>
+                <div class="loading" id="loading">正在处理，请稍候...</div>
+            </form>
+
+            {% if error %}
+            <div class="error">⚠️ {{ error }}</div>
+            {% endif %}
+
+            {% if summary %}
+            <div class="result-box">
+                <div class="result-header">
+                    <span class="source-tag">{{ source_info }}</span>
+                    <button class="copy-btn" onclick="copySummary()">📋 复制总结</button>
+                </div>
+                <div class="summary-content" id="summaryText">{{ summary }}</div>
+            </div>
+
+            {% if raw_content %}
+            <div class="raw-content">
+                <div class="raw-content-label">📄 提取的内容预览（前2000字）：</div>
+                {{ raw_content }}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function copySummary() {
+            const summaryText = document.getElementById('summaryText').innerText;
+            navigator.clipboard.writeText(summaryText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerText;
+                btn.innerText = '✅ 已复制';
+                btn.style.background = '#4caf50';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#4caf50';
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = 'white';
+                    btn.style.color = '#667eea';
+                    btn.style.borderColor = '#667eea';
+                }, 2000);
+            }).catch(err => {
+                const textarea = document.createElement('textarea');
+                textarea.value = summaryText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('总结已复制到剪贴板！');
+            });
+        }
+    </script>
+</body>
+</html>
+'''
+
+# 保存主页面
+with open('/mnt/kimi/output/dashboard.html', 'w', encoding='utf-8') as f:
+    f.write(dashboard_html)
+
+print("✅ dashboard.html 已创建")
