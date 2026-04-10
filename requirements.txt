@@ -1,16 +1,6 @@
-<<<<<<< HEAD
-flask
-sys
-openai
-os
-=======
-
-# 创建 requirements.txt 文件
-requirements
-Flask
-Flask-Login
-Flask-SQLAlchemy
-Werkzeug
-openai
-yt-dlp
->>>>>>> fc91ce0d4bd7d155949359319cde7a8c65598351
+flask==2.3.3
+flask-login==0.6.3
+flask-sqlalchemy==3.1.1
+werkzeug==2.3.7
+openai==1.3.7
+yt-dlp==2024.3.10
