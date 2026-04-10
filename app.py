@@ -18,7 +18,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'dev-secret-key-123456'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///new_users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 try:
